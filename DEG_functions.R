@@ -16,11 +16,13 @@ de_split <- function(Differential_expression_genes) {
 enrichment_analysis <- function(Differential_expression_genes = NULL, all_regulated = NULL,
                                 group_name="",background, fdr_Cutoff = 0.01,ident1_name = "", 
                                 ident2_name = "",write_csv = F, ident_name = "", ident_num = 1,
-                                return_df = F, pval_cutoff = F, add_bg_to_db = F , db = NULL) {
+                                return_df = F, pval_cutoff = F, add_bg_to_db = F , db = NULL,
+                                add_msigdb_to_bg = F) {
   library(msigdbr)
   library(fdrtool)
   library(enrichR)
   library(clusterProfiler)
+  library(RCurl)
   
   if ( is.null(all_regulated)){
     if ( is.null(Differential_expression_genes)){
@@ -64,8 +66,13 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
       all_genes = data.frame(gs_name = "background",gene_symbol = background) 
       msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
     }
-
     
+    if ( add_msigdb_to_bg == T){
+      msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_genes.txt", character(), quote = "",quiet = T)
+      all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
+      msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
+    }
+
     #perform enrichment analysis
     enrichment_result = enricher(
       gene = fdr_genes,

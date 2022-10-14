@@ -60,6 +60,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
       msigdbr_t2g = hallmark_gene_set %>% dplyr::distinct(gs_name, gene_symbol) %>% as.data.frame()
       
     }else if(db == "homer_hallmark"){
+      msigdbr_t2g <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
       
       
     } else{ msigdbr_t2g = db}

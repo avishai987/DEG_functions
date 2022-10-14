@@ -59,7 +59,10 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
       hallmark_gene_set = msigdbr(species = "Homo sapiens", category = "H")
       msigdbr_t2g = hallmark_gene_set %>% dplyr::distinct(gs_name, gene_symbol) %>% as.data.frame()
       
-    }else{ msigdbr_t2g = db}
+    }else if(db == "homer_hallmark"){
+      
+      
+    } else{ msigdbr_t2g = db}
 
     #Add all genes to msigdb (beacause the background is (TERM2GENE AND universe) (not like the documentation))
     if (!is.null(background) & add_bg_to_db == T){
@@ -68,7 +71,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
     }
     
     if ( add_msigdb_to_bg == T){
-      msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_genes.txt", character(), quote = "",quiet = T)
+      msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", character(), quote = "",quiet = T)
       all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
       msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
     }

@@ -17,7 +17,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
                                 group_name="",background, fdr_Cutoff = 0.01,ident1_name = "", 
                                 ident2_name = "",write_csv = F, ident_name = "", ident_num = 1,
                                 return_df = F, pval_cutoff = F, add_bg_to_db = F , db = NULL,
-                                add_msigdb_to_bg = F) {
+                                add_msigdb_to_bg = F, convert_background = F) {
   library(msigdbr)
   library(fdrtool)
   library(enrichR)
@@ -76,7 +76,10 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
       all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
       msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
     }
-
+    if ( convert_background == T){
+      ac2gene_dic = load("./ac2gene_dic.RData") %>% get()
+      background = ac2gene_dic[background] %>% unname
+    }
     #perform enrichment analysis
     enrichment_result = enricher(
       gene = fdr_genes,

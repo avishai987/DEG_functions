@@ -285,7 +285,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   else {return (p)}
   
 }
-genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F) {
+genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F,convert_background = F) {
   library(clusterProfiler)
   #enrichment analysis and plot vector of genes
   

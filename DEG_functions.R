@@ -295,6 +295,10 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
   
   if ( convert_background == T){
     ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt",sep = "\t",header = F)
+    values = ac2gene_dic %>% pull(2)
+    names = ac2gene_dic %>% pull(1)
+    ac2gene_dic = values
+    names(ac2gene_dic) = names
     background = ac2gene_dic[background] %>% unname
   }
   

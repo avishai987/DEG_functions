@@ -294,7 +294,7 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
   }
   
   if ( convert_background == T){
-    ac2gene_dic = load("./ac2gene_dic.RData") %>% get()
+    ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt",sep = "\t",header = F)
     background = ac2gene_dic[background] %>% unname
   }
   

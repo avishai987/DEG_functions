@@ -88,8 +88,10 @@ result = enrichment_analysis(de_genes, background = ac.genes_symbols,fdr_Cutoff 
 ac2gene_dic[1:10]
 ac2gene_dic["AAQ88605"]
 save(ac2gene_dic, file="ac2gene_dic.rds")
-a = load("./ac2gene_dic.rds") %>% get()
+fwrite(x = ac2gene_dic %>% as.data.frame(),file = "ac2gene_dic.txt",sep = "\t",col.names = F,row.names = T)
 
+ac2gene_dic = load("./ac2gene_dic.rds") %>% get()
+a = fread(file = "ac2gene_dic.txt",sep = "\t",header = F)
 debug(enrichment_analysis)
 result = enrichment_analysis(de_genes, background = background,fdr_Cutoff = 0.05,
                              ident1_name = "pre-treatment",ident2_name = "on-treatment" ,return_df = T, add_bg_to_db = F, add_msigdb_to_bg = T,db = "homer_hallmark"

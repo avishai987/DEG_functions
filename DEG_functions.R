@@ -288,6 +288,16 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
 genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F) {
   library(clusterProfiler)
   #enrichment analysis and plot vector of genes
+  
+  if(gene_sets == "homer_hallmark"){
+    gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
+  }
+  
+  if ( convert_background == T){
+    ac2gene_dic = load("./ac2gene_dic.RData") %>% get()
+    background = ac2gene_dic[background] %>% unname
+  }
+  
   if(add_bg == T){
     all_genes = data.frame(gs_name = "background",gene_symbol = background) #create all genes set
     gene_sets = rbind (gene_sets,all_genes) #add background genes

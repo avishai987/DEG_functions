@@ -289,8 +289,10 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
   library(clusterProfiler)
   #enrichment analysis and plot vector of genes
   
-  if(gene_sets == "homer_hallmark"){
-    gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
+  if(gene_sets %>% is.character() == T){
+    if ( gene_sets == "homer_hallmark") {
+      gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
+    }
   }
   
   if ( convert_background == T){
@@ -358,7 +360,7 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
   return (enrichment_result)
 }
 
-sig_heatmap <- function(all_patients_result, title,clustering_distance =  "euclidean", annotation = NULL) {
+sig_heatmap <- function(all_patients_result, title,clustering_distance =  "euclidean", annotation = NULL, silent = F) {
   my_fun <- function(p) {                     
     asterisks_vec = p
     # p = c(0.001, 0.01, 0.05,3.314507e-15)
@@ -374,6 +376,7 @@ sig_heatmap <- function(all_patients_result, title,clustering_distance =  "eucli
   
   
   all_patients_result = -log(all_patients_result)
+  all_patients_result[all_patients_result>35] = 35
   paletteFunc <- colorRampPalette(c("white","navy"));
   
   palette <- paletteFunc(100)
@@ -382,28 +385,30 @@ sig_heatmap <- function(all_patients_result, title,clustering_distance =  "eucli
   # breaks_labels = as.character(breaks)
   # breaks_labels[length(breaks_labels)] = "FDR"
   
-
-    p<- pheatmap(all_patients_result,
-             cluster_rows = T,
-             cluster_cols = T,
-             show_rownames = TRUE, 
-             color = palette,
-             # breaks = seq(0,20,0.2), 
-             number_color = "grey30",
-             main = title,
-             display_numbers = asterisks,
-             fontsize_row = 8,
-             clustering_distance_rows = clustering_distance,
-             clustering_distance_cols = clustering_distance,
-             annotation_col = annotation[["myannotation"]],
-             annotation_colors = annotation[["ann_colors"]],
-             border_color = "black"
-             # legend_breaks =breaks,
-             # legend_labels = breaks_labels
-             )
-   print(p) 
-return (p)
+  
+  p<- pheatmap(all_patients_result,
+               cluster_rows = T,
+               cluster_cols = T,
+               show_rownames = TRUE, 
+               color = palette,
+               # breaks = seq(0,20,0.2), 
+               number_color = "grey30",
+               main = title,
+               display_numbers = asterisks,
+               fontsize_row = 8,
+               clustering_distance_rows = clustering_distance,
+               clustering_distance_cols = clustering_distance,
+               annotation_col = annotation[["myannotation"]],
+               annotation_colors = annotation[["ann_colors"]],
+               border_color = "black",silent = silent
+               # legend_breaks =breaks,
+               # legend_labels = breaks_labels
+  )
+  if(silent == F){
+    print(p) }
+  return (p)
 }
+
 
 
 #filter_features before findMarkers

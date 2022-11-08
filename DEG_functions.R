@@ -285,7 +285,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   else {return (p)}
   
 }
-genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F,convert_background = F) {
+genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F,convert_background = F,add_msigdb_to_set = F) {
   library(clusterProfiler)
   #enrichment analysis and plot vector of genes
   
@@ -302,6 +302,12 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
     ac2gene_dic = values
     names(ac2gene_dic) = names
     background = ac2gene_dic[background] %>% unname
+  }
+  
+  if ( add_msigdb_to_set == T){
+    msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", character(), quote = "",quiet = T)
+    all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
+    gene_sets = rbind(all_genes, gene_sets)
   }
   
   if(add_bg == T){

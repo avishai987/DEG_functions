@@ -296,12 +296,17 @@ genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,s
   }
   
   if ( convert_background == T){
+    background = gsub(pattern = "\\..*$",replacement = "",x = background) #remove .XXX from genes like AC005752.10
+    genes = gsub(pattern = "\\..*$",replacement = "",x = genes) #remove .XXX from genes like AC005752.10
+    
     ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt",sep = "\t",header = F)
     values = ac2gene_dic %>% pull(2)
     names = ac2gene_dic %>% pull(1)
     ac2gene_dic = values
     names(ac2gene_dic) = names
     background = ac2gene_dic[background] %>% unname
+    genes = ac2gene_dic[genes] %>% unname
+    
   }
   
   if ( add_msigdb_to_set == T){

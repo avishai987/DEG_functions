@@ -285,91 +285,81 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   else {return (p)}
   
 }
-genes_vec_enrichment <- function(genes, background, gene_sets,title,add_bg = T,silent = F,convert_background = F,add_msigdb_to_set = F) {
+genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = T, silent = F, 
+                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL) {
   library(clusterProfiler)
-  #enrichment analysis and plot vector of genes
-  
-  if(gene_sets %>% is.character() == T){
-    if ( gene_sets == "homer_hallmark") {
-      gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
+  if (gene_sets %>% is.character() == T) {
+    if (gene_sets == "homer_hallmark") {
+      gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv", 
+                         sep = ",")
     }
   }
-  
-  if ( convert_background == T){
-    background = gsub(pattern = "\\..*$",replacement = "",x = background) #remove .XXX from genes like AC005752.10
-    genes = gsub(pattern = "\\..*$",replacement = "",x = genes) #remove .XXX from genes like AC005752.10
-    
-    ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt",sep = "\t",header = F)
+  if (convert_background == T) {
+    background = gsub(pattern = "\\..*$", replacement = "", 
+                      x = background)
+    genes = gsub(pattern = "\\..*$", replacement = "", x = genes)
+    ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt", 
+                        sep = "\t", header = F)
     values = ac2gene_dic %>% pull(2)
     names = ac2gene_dic %>% pull(1)
     ac2gene_dic = values
     names(ac2gene_dic) = names
     background = ac2gene_dic[background] %>% unname
     genes = ac2gene_dic[genes] %>% unname
+  }
+  if (add_msigdb_to_set == T) {
+    msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", 
+                         character(), quote = "", quiet = T)
+    all_genes = data.frame(gs_name = "msigdb", gene_symbol = msigdb_genes)
+    gene_sets = rbind(all_genes, gene_sets)
+  }
+  if (add_bg == T) {
+    all_genes = data.frame(gs_name = "background", gene_symbol = background)
+    gene_sets = rbind(gene_sets, all_genes)
+  }
+  
+  if(custom_pathways %>% is_null()== F){
+    gene_sets = rbind(gene_sets, custom_pathways)
     
   }
   
-  if ( add_msigdb_to_set == T){
-    msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", character(), quote = "",quiet = T)
-    all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
-    gene_sets = rbind(all_genes, gene_sets)
-  }
-  
-  if(add_bg == T){
-    all_genes = data.frame(gs_name = "background",gene_symbol = background) #create all genes set
-    gene_sets = rbind (gene_sets,all_genes) #add background genes
-  }
-
-  enrichment_result = enricher(
-    gene = genes,
-    pvalueCutoff = 0.05,
-    pAdjustMethod = "fdr",
-    universe = background,
-    minGSSize = 10,
-    maxGSSize = 500,
-    qvalueCutoff = 1,
-    TERM2GENE = gene_sets,
-    TERM2NAME = NA
-  )
-  
-
+  enrichment_result = enricher(gene = genes, pvalueCutoff = 0.05, 
+                               pAdjustMethod = "fdr", universe = background, minGSSize = 10, 
+                               maxGSSize = 500, qvalueCutoff = 1, TERM2GENE = gene_sets, 
+                               TERM2NAME = NA)
   enrichment_result = enrichment_result@result
-  enrichment_result = enrichment_result[ , -which(names(enrichment_result) %in% c("ID","Description","geneID"))]
-  enrichment_result <- tibble::rownames_to_column(enrichment_result, "pathway_name") #make row names as column
-  #Add the not returned pathways:
-  for (pathway in unique(gene_sets$gs_name)){
-    if (!pathway %in% enrichment_result$pathway_name){
-      enrichment_result = enrichment_result %>% add_row (pathway_name = pathway, GeneRatio = "0/0", BgRatio ="0/0", pvalue = 1,p.adjust = 1,qvalue = 1, Count=0)
+  enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% 
+                                                   c("ID", "Description"))]
+  enrichment_result <- tibble::rownames_to_column(enrichment_result, 
+                                                  "pathway_name")
+  for (pathway in unique(gene_sets$gs_name)) {
+    if (!pathway %in% enrichment_result$pathway_name) {
+      enrichment_result = enrichment_result %>% add_row(pathway_name = pathway, 
+                                                        GeneRatio = "0/0", BgRatio = "0/0", pvalue = 1, 
+                                                        p.adjust = 1, qvalue = 1, Count = 0)
     }
   }
-  
-  final_result = enrichment_result[order(enrichment_result$p.adjust),] #order by pvalue
-  final_result = final_result[1:10,] #take best 10 pathways
-  final_result[, 5] <- -log10(final_result['p.adjust']) #perform -log10 on p.adjust values
+  final_result = enrichment_result[order(enrichment_result$p.adjust), 
+  ]
+  final_result = final_result[1:10, ]
+  final_result[, 5] <- -log10(final_result["p.adjust"])
   bar_color = "dodgerblue"
-
-   p <- ggplot(data = final_result, aes_string(x = reorder(final_result$pathway_name,
-                                                            final_result$p.adjust), y = "p.adjust")) +
-      geom_bar(stat = "identity", fill = bar_color) + 
-      geom_hline(yintercept = 1.3, colour="black", linetype = "longdash",size = 1) +
-      coord_flip() + xlab("Pathway") +
-      scale_fill_manual( drop = FALSE) +
-      ylab("-log10(p.adjust)") +
-      geom_text(aes_string(label = "pathway_name", y = 0),
-                size = 4,
-                color = "black",
-                position = position_dodge(1),
-                hjust = 0)+
-      theme(axis.title.y= element_blank(),
-            axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())+
-      ggtitle(title) 
-
-  if(silent == F){
-    print (p)
+  p <- ggplot(data = final_result, aes_string(x = reorder(final_result$pathway_name, 
+                                                          final_result$p.adjust), y = "p.adjust")) + geom_bar(stat = "identity", 
+                                                                                                              fill = bar_color) + geom_hline(yintercept = 1.3, colour = "black", 
+                                                                                                                                             linetype = "longdash", size = 1) + coord_flip() + xlab("Pathway") + 
+    scale_fill_manual(drop = FALSE) + ylab("-log10(p.adjust)") + 
+    geom_text(aes_string(label = "pathway_name", y = 0), 
+              size = 4, color = "black", position = position_dodge(1), 
+              hjust = 0) + theme(axis.title.y = element_blank(), 
+                                 axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
+    ggtitle(title)
+  if (silent == F) {
+    print(p)
   }
-  return (enrichment_result)
+  return(enrichment_result)
 }
+  
 
 sig_heatmap <- function(all_patients_result, title,clustering_distance =  "euclidean", annotation = NULL, silent = F) {
   my_fun <- function(p) {                     

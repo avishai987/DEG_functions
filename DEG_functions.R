@@ -5,7 +5,7 @@
 
 # Split Differential_expression to up regulated and down regulated:
 de_split <- function(Differential_expression_genes) {
-  up_regulated = Differential_expression_genes[Differential_expression_genes$avg_log2FC >= 0,] #changed from 1 to 0 23.6
+  up_regulated = Differential_expression_genes[Differential_expression_genes$avg_log2FC >= 0,] 
   down_regulated = Differential_expression_genes[Differential_expression_genes$avg_log2FC < 0,]
   all_regulated_vec <- list(up_regulated = up_regulated, down_regulated = down_regulated)
   return (all_regulated_vec)
@@ -285,7 +285,7 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   else {return (p)}
   
 }
-genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = T, silent = F, 
+genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F, silent = F, 
                                  convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL) {
   library(clusterProfiler)
   if (gene_sets %>% is.character() == T) {
@@ -327,6 +327,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = T
                                pAdjustMethod = "fdr", universe = background, minGSSize = 10, 
                                maxGSSize = 500, qvalueCutoff = 1, TERM2GENE = gene_sets, 
                                TERM2NAME = NA)
+  if (enrichment_result %>% is.null() == T){next}
   enrichment_result = enrichment_result@result
   enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% 
                                                    c("ID", "Description"))]

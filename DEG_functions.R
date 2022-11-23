@@ -327,8 +327,10 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
                                pAdjustMethod = "fdr", universe = background, minGSSize = 10, 
                                maxGSSize = 500, qvalueCutoff = 1, TERM2GENE = gene_sets, 
                                TERM2NAME = NA)
-  if (enrichment_result %>% is.null() == T){next}
-  enrichment_result = enrichment_result@result
+  tryCatch({
+    enrichment_result = enrichment_result@result
+  }, error=function(e){}) #if enrichment_result is null
+  
   enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% 
                                                    c("ID", "Description"))]
   enrichment_result <- tibble::rownames_to_column(enrichment_result, 

@@ -318,7 +318,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
     gene_sets = rbind(gene_sets, all_genes)
   }
   
-  if(custom_pathways %>% is_null()== F){
+  if(custom_pathways %>% is.null()== F){
     gene_sets = rbind(gene_sets, custom_pathways)
     
   }

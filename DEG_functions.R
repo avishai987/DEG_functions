@@ -333,7 +333,9 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
                                TERM2NAME = NA)
   tryCatch({
     enrichment_result = enrichment_result@result
-  }, error=function(e){ return (list(plt = plot.new(), mat = data.frame()))}) #if enrichment_result is null
+  }, error=function(e){ return (list(plt = plot.new(), mat = data.frame())) 
+    exit()
+  }) #if enrichment_result is null
   
   enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% 
                                                    c("ID", "Description"))]

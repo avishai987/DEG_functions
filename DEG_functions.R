@@ -1,7 +1,11 @@
 
 # Load Functions ---------------------------------------------------------------
 
-
+require(msigdbr,quietly = T)
+require(fdrtool,quietly = T)
+require(enrichR,quietly = T)
+require(clusterProfiler,quietly = T)
+require(RCurl,quietly = T)
 
 # Split Differential_expression to up regulated and down regulated:
 de_split <- function(Differential_expression_genes) {
@@ -18,11 +22,11 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
                                 ident2_name = "",write_csv = F, ident_name = "", ident_num = 1,
                                 return_df = F, pval_cutoff = F, add_bg_to_db = F , db = NULL,
                                 add_msigdb_to_bg = F, convert_background = F) {
-  library(msigdbr)
-  library(fdrtool)
-  library(enrichR)
-  library(clusterProfiler)
-  library(RCurl)
+library(msigdbr,quietly = T)
+library(fdrtool,quietly = T)
+library(enrichR,quietly = T)
+library(clusterProfiler,quietly = T)
+library(RCurl,quietly = T)
   
   if ( is.null(all_regulated)){
     if ( is.null(Differential_expression_genes)){
@@ -217,8 +221,8 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
                       ident2 = "" , fdr_cutoff = 0.05 , log2fc_cutoff = 0.6, max_names = 10,
                       return_de_genes = F, show_graph = T, show_legend = T) {
-  library(ggrepel)
-  library(dplyr)
+  library(ggrepel,quietly = T)
+  library(dplyr,quietly = T)
   names_for_label = c(paste(ident2,"down genes"),paste(ident2,"up genes"))
   #color genes if there are over/under/same expressed
   de_genes$diffexpressed <- "Same" 
@@ -286,8 +290,8 @@ enrichment_analysis <- function(Differential_expression_genes = NULL, all_regula
   
 }
 genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F, silent = F, 
-                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL) {
-  library(clusterProfiler)
+                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL, return_all = F) {
+  library(clusterProfiler,quietly = T)
   if (gene_sets %>% is.character() == T) {
     if (gene_sets == "homer_hallmark") {
       gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv", 
@@ -360,6 +364,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
   if (silent == F) {
     print(p)
   }
+  if (return_all == T){ return (list(plt = p, mat = enrichment_result))}
   return(enrichment_result)
 }
   

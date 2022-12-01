@@ -290,39 +290,34 @@ library(RCurl,quietly = T)
   
   }
   
-genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F, silent = F, 
-                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL, return_all = F) {
+genes_vec_enrichment<- function (genes, background, gene_sets, homer = F, title, silent = F, 
+                                custom_pathways = NULL, return_all = F) {
   library(clusterProfiler,quietly = T)
-  if (gene_sets %>% is.character() == T) {
-    if (gene_sets == "homer_hallmark") {
-      gene_sets <- fread(file.path(data_dir,"homer_hallmark.csv"), sep = ",")
-    }
-  }
-  if (convert_background == T) {
-    background = gsub(pattern = "\\..*$", replacement = "", 
-                      x = background)
-    genes = gsub(pattern = "\\..*$", replacement = "", x = genes)
-
-    ac2gene_dic = fread(file.path(data_dir,"ac2gene_dic.txt"), 
-                        sep = "\t", header = F)
+  
+  if (homer == T){
+    gene_sets <- fread(file.path(data_dir,"homer_hallmark.csv"), sep = ",") #read hallmark from homer as gene sets
+    
+    #convert genes and background to with homer's name:
+    background = gsub(pattern = "\\..*$", replacement = "",x = background) #remove "." from gene names
+    genes = gsub(pattern = "\\..*$", replacement = "", x = genes) #remove "." from gene names
+    
+    ac2gene_dic = fread(file.path(data_dir,"ac2gene_dic.txt"),sep = "\t", header = F) #read dictionary supplied by homer
+      #make dic:
     values = ac2gene_dic %>% pull(2)
     names = ac2gene_dic %>% pull(1)
     ac2gene_dic = values
     names(ac2gene_dic) = names
+      #convert:
     background = ac2gene_dic[background] %>% unname
     genes = ac2gene_dic[genes] %>% unname
-  }
-  if (add_msigdb_to_set == T) {
-    msigdb_genes <- scan(file.path(data_dir,"msigdb_homer_genes.txt"), 
-                         character(), quote = "", quiet = T)
+    
+    #add msigdb genes to background (otherwise, genes that are not in hallmark will be ommited)
+    msigdb_genes <- scan(file.path(data_dir,"msigdb_homer_genes.txt"),character(), quote = "", quiet = T)
     all_genes = data.frame(gs_name = "msigdb", gene_symbol = msigdb_genes)
     gene_sets = rbind(all_genes, gene_sets)
   }
-  if (add_bg == T) {
-    all_genes = data.frame(gs_name = "background", gene_symbol = background)
-    gene_sets = rbind(gene_sets, all_genes)
-  }
-  
+
+
   if(custom_pathways %>% is.null()== F){
     gene_sets = rbind(gene_sets, custom_pathways)
     

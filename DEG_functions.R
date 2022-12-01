@@ -290,7 +290,7 @@ library(RCurl,quietly = T)
   
   }
   
-genes_vec_enrichment<- function (genes, background, gene_sets, homer = F, title, silent = F, 
+genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, title, silent = F, 
                                 custom_pathways = NULL, return_all = F) {
   library(clusterProfiler,quietly = T)
   

@@ -295,7 +295,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
   library(clusterProfiler,quietly = T)
   if (gene_sets %>% is.character() == T) {
     if (gene_sets == "homer_hallmark") {
-      gene_sets <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv", 
+      gene_sets <- fread(file.path(data_dir,"homer_hallmark.csv"), 
                          sep = ",")
     }
   }

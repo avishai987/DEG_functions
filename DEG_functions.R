@@ -1,6 +1,6 @@
+data_dir =  file.path(.libPaths()[1], "DEG_functions","DEG_functions-main")
 
 # Load Functions ---------------------------------------------------------------
-
 require(msigdbr,quietly = T)
 require(fdrtool,quietly = T)
 require(enrichR,quietly = T)
@@ -64,7 +64,7 @@ library(RCurl,quietly = T)
       msigdbr_t2g = hallmark_gene_set %>% dplyr::distinct(gs_name, gene_symbol) %>% as.data.frame()
       
     }else if(db == "homer_hallmark"){
-      msigdbr_t2g <- fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/homer_hallmark.csv",sep = ",")
+      msigdbr_t2g <- fread(file.path(data_dir,"homer_hallmark.csv"),sep = ",")
       
       
     } else{ msigdbr_t2g = db}
@@ -288,7 +288,8 @@ library(RCurl,quietly = T)
   if (return_de_genes == T){ return(de_genes)}
   else {return (p)}
   
-}
+  }
+  
 genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F, silent = F, 
                                  convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL, return_all = F, dic_location = F) {
   library(clusterProfiler,quietly = T)

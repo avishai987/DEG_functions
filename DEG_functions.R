@@ -76,7 +76,7 @@ library(RCurl,quietly = T)
     }
     
     if ( add_msigdb_to_bg == T){
-      msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", character(), quote = "",quiet = T)
+      msigdb_genes <- scan(file.path(data_dir,"msigdb_homer_genes.txt"), character(), quote = "",quiet = T)
       all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
       msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
     }
@@ -291,25 +291,20 @@ library(RCurl,quietly = T)
   }
   
 genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F, silent = F, 
-                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL, return_all = F, dic_location = F) {
+                                 convert_background = F, add_msigdb_to_set = F,custom_pathways = NULL, return_all = F) {
   library(clusterProfiler,quietly = T)
   if (gene_sets %>% is.character() == T) {
     if (gene_sets == "homer_hallmark") {
-      gene_sets <- fread(file.path(data_dir,"homer_hallmark.csv"), 
-                         sep = ",")
+      gene_sets <- fread(file.path(data_dir,"homer_hallmark.csv"), sep = ",")
     }
   }
   if (convert_background == T) {
     background = gsub(pattern = "\\..*$", replacement = "", 
                       x = background)
     genes = gsub(pattern = "\\..*$", replacement = "", x = genes)
-    if (dic_location == T) {
-      ac2gene_dic = fread("C:/Users/avishaiw.EKMD/My Drive/Master/Functions repositories/DEG_functions/ac2gene_dic.txt", 
-                          sep = "\t", header = F)
-    }else{
-    ac2gene_dic = fread("https://raw.githubusercontent.com/avishai987/DEG_functions/main/ac2gene_dic.txt", 
+
+    ac2gene_dic = fread(file.path(data_dir,"ac2gene_dic.txt"), 
                         sep = "\t", header = F)
-    }
     values = ac2gene_dic %>% pull(2)
     names = ac2gene_dic %>% pull(1)
     ac2gene_dic = values
@@ -318,7 +313,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets, title, add_bg = F
     genes = ac2gene_dic[genes] %>% unname
   }
   if (add_msigdb_to_set == T) {
-    msigdb_genes <- scan("https://raw.githubusercontent.com/avishai987/DEG_functions/main/msigdb_homer_genes.txt", 
+    msigdb_genes <- scan(file.path(data_dir,"msigdb_homer_genes.txt"), 
                          character(), quote = "", quiet = T)
     all_genes = data.frame(gs_name = "msigdb", gene_symbol = msigdb_genes)
     gene_sets = rbind(all_genes, gene_sets)

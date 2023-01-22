@@ -40,8 +40,8 @@ library(RCurl,quietly = T)
   i = 1; #for choosing the right the names
   all_graphs <- list() #create list to save graphs
   all_results = list()#create list to enrichment results
-  all_output_df = list()#create list to enrichment results
-  
+  titles = c("negative markers", "positive markers")
+  colors = c("indianred2", "dodgerblue")
   for (regulated in all_regulated) { #do twice for downregulated and up
 
     #take genes from differential expression
@@ -51,159 +51,21 @@ library(RCurl,quietly = T)
     regulated$fdr<-p.adjust(p = as.vector(regulated$p_val) ,method = "fdr" )
     
     if (pval_cutoff == T){
-      fdr_genes = regulated$genes[regulated$p_val<0.05] #take genes less than the cutoff 
+      genes_to_test = regulated$genes[regulated$p_val<0.05] #take genes less than the cutoff 
       
     }
     if (pval_cutoff == F){
-      fdr_genes = regulated$genes[regulated$fdr<fdr_Cutoff] #take genes less than the cutoff 
+      genes_to_test = regulated$genes[regulated$fdr<fdr_Cutoff] #take genes less than the cutoff 
     }
     
-    #set hallmark pathways
-    if (is.null(db)){
-      hallmark_gene_set = msigdbr(species = "Homo sapiens", category = "H")
-      msigdbr_t2g = hallmark_gene_set %>% dplyr::distinct(gs_name, gene_symbol) %>% as.data.frame()
-      
-    }else if(db == "homer_hallmark"){
-      msigdbr_t2g <- fread(file.path(data_dir,"homer_hallmark.csv"),sep = ",")
-      
-      
-    } else{ msigdbr_t2g = db}
-
-    #Add all genes to msigdb (beacause the background is (TERM2GENE AND universe) (not like the documentation))
-    if (!is.null(background) & add_bg_to_db == T){
-      all_genes = data.frame(gs_name = "background",gene_symbol = background) 
-      msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
-    }
-    
-    if ( add_msigdb_to_bg == T){
-      msigdb_genes <- scan(file.path(data_dir,"msigdb_homer_genes.txt"), character(), quote = "",quiet = T)
-      all_genes = data.frame(gs_name = "msigdb",gene_symbol = msigdb_genes) 
-      msigdbr_t2g = rbind(all_genes, msigdbr_t2g)
-    }
-    if ( convert_background == T){
-      ac2gene_dic = load("./ac2gene_dic.RData") %>% get()
-      background = ac2gene_dic[background] %>% unname
-    }
-    #perform enrichment analysis
-    enrichment_result = enricher(
-      gene = fdr_genes,
-      pvalueCutoff = 0.0001,
-      pAdjustMethod = "fdr",
-      universe = background,
-      minGSSize = 10,
-      maxGSSize = 500,
-      qvalueCutoff = 0.0001,
-      TERM2GENE = msigdbr_t2g,
-      TERM2NAME = NA
-    )
-    #take relevant result
-    if (!is.null(enrichment_result)) { 
-      enrichment_result = enrichment_result@result #take results
-      enrichment_result = enrichment_result[ , -which(names(enrichment_result) %in% c("ID","Description","geneID"))] #remove unwanted cols
-      output_df  = enrichment_result
-      
-        #Add pathways that not in the output_df
-        all_pathways = unique(msigdbr_t2g$gs_name)
-        computed_pathways = rownames(output_df)
-        not_computed = all_pathways [!all_pathways %in% computed_pathways]
-        zeros = replicate(0, n =length(not_computed))
-        ones = replicate(1, n =length(not_computed))
-        
-        empty_pathways = data.frame(GeneRatio = zeros , BgRatio = zeros ,
-                                    pvalue =ones , p.adjust = ones, qvalue = zeros, Count = zeros, row.names = not_computed)
-        output_df = rbind(output_df, empty_pathways)
-        
-      
-        all_output_df[[i]] = output_df
-        names (all_output_df)[i] = names(all_regulated)[i]
-      enrichment_result = enrichment_result[startsWith(x = rownames(enrichment_result),prefix = "HALLMARK"),]
-      enrichment_result <- tibble::rownames_to_column(enrichment_result, "pathway_name") #make row names as column
-      enrichment_result = enrichment_result[order(enrichment_result$p.adjust),] #order by pvalue
-      enrichment_result = enrichment_result[1:10,] #take best 10 pathways
-      enrichment_result[, 5] <- -log10(enrichment_result['p.adjust']) #perform -log10 on p.adjust values
-    }
-    
-    else{ #if no genes were significant, plot empty enrichment result
-      # pathway_names = c("HALLMARK_WNT_BETA_CATENIN_SIGNALING", "HALLMARK_MYC_TARGETS_V2", 
-      #                   "HALLMARK_UV_RESPONSE_DN", "HALLMARK_IL2_STAT5_SIGNALING", "HALLMARK_E2F_TARGETS", 
-      #                   "HALLMARK_ESTROGEN_RESPONSE_EARLY", "HALLMARK_G2M_CHECKPOINT", 
-      #                   "HALLMARK_INFLAMMATORY_RESPONSE", "HALLMARK_MYC_TARGETS_V1", 
-      #                   "HALLMARK_P53_PATHWAY", "HALLMARK_TNFA_SIGNALING_VIA_NFKB")
-      msigdbr_t2g = hallmark_gene_set %>% dplyr::distinct(gs_name, gene_symbol) %>% as.data.frame()
-      
-      pathway_names =  unique(msigdbr_t2g$gs_name)
-  
-      enrichment_result = data.frame(pathway_name = pathway_names[1:10], p.adjust = 0)
-      zeros = replicate(0, n = 50)
-      ones = replicate(1, n = 50)
-      
-      output_df = data.frame(GeneRatio = zeros , BgRatio = zeros ,
-                                  pvalue =ones , p.adjust = ones, qvalue = zeros, Count = zeros, row.names = pathway_names)
-
-      all_output_df[[i]] = output_df
-      names (all_output_df)[i] = names(all_regulated)[i]
-    }
-    
-    if (write_csv == T){
-      file_name = paste0(names(all_regulated)[i],"_",group_name,".csv")
-      write.csv(x=enrichment_result, file=file_name)
-    }
-
-
-    ident = ident2_name
-    
-    #make graph title
-    if (names(all_regulated)[i]=="up_regulated"){
-      markers_title="negative markers"
-      bar_color = "indianred2"
-    }
-    else if(names(all_regulated)[i]=="down_regulated"){
-      markers_title="positive markers"
-      bar_color = "dodgerblue"
-    }
-      
-    else {
-      print ("error")
-      return (0)
-    }
-    
-
-    
-    #create graph
-    p = ggplot(data = enrichment_result, aes_string(x = reorder(enrichment_result$pathway_name,
-                                                                enrichment_result$p.adjust), y = "p.adjust")) +
-      geom_bar(stat = "identity", fill = bar_color) + 
-      geom_hline(yintercept = 1.3, colour="black", linetype = "longdash",size = 1) +
-      coord_flip() + xlab("Pathway") +
-      scale_fill_manual( drop = FALSE) +
-      ylab("-log10(p.adjust)") +
-      geom_text(aes_string(label = "pathway_name", y = 0),
-                size = 4,
-                color = "black",
-                position = position_dodge(1),
-                hjust = 0)+
-      theme(axis.title.y= element_blank(),
-            axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())+
-      ggtitle(paste(ident, markers_title)) 
-    
-    all_graphs =  append(all_graphs, list(p))
-    all_results[[names(all_regulated)[i]]] = enrichment_result
-    
+    enrich_res = genes_vec_enrichment(genes = genes_to_test,background = background,homer = T,title = titles[i],bar_color = colors[i],silent = T
+                         ,return_all = T)
+    all_results[[i]] = enrich_res
     i = i+1
-    
   }
-  p3<-all_graphs[[1]]+all_graphs[[2]]
-  print(p3)
   
-
-  if (return_df){
-    return (all_output_df)
-  }
-  else{
-    return(p3)
-    
-  }
+  p<-all_results[[1]]$plt+all_results[[2]]$plt
+  print(p)
 }
 
 

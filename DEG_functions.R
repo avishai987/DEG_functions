@@ -291,7 +291,7 @@ library(RCurl,quietly = T)
   }
   
 genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, title, silent = F, 
-                                custom_pathways = NULL, return_all = F) {
+                                custom_pathways = NULL, return_all = F,bar_color = "dodgerblue" ) {
   library(clusterProfiler,quietly = T)
   
   if (homer == T){
@@ -333,22 +333,19 @@ genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, t
     exit()
   }) #if enrichment_result is null
   
-  enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% 
-                                                   c("ID", "Description"))]
-  enrichment_result <- tibble::rownames_to_column(enrichment_result, 
-                                                  "pathway_name")
+  enrichment_result = enrichment_result[, -which(names(enrichment_result) %in% c("ID", "Description"))]
+  enrichment_result <- tibble::rownames_to_column(enrichment_result, "pathway_name")
   for (pathway in unique(gene_sets$gs_name)) {
-    if (!pathway %in% enrichment_result$pathway_name) {
+    if (!pathway %in% enrichment_result$pathway_name) { #add missing pathways
       enrichment_result = enrichment_result %>% add_row(pathway_name = pathway, 
                                                         GeneRatio = "0/0", BgRatio = "0/0", pvalue = 1, 
                                                         p.adjust = 1, qvalue = 1, Count = 0)
     }
   }
-  final_result = enrichment_result[order(enrichment_result$p.adjust), 
-  ]
-  final_result = final_result[1:10, ]
+  final_result = enrichment_result[order(enrichment_result$p.adjust), ] #order by fdr
+  final_result = final_result[1:10, ] #take top 10
   final_result[, 5] <- -log10(final_result["p.adjust"])
-  bar_color = "dodgerblue"
+  bar_color = bar_color
   p <- ggplot(data = final_result, aes_string(x = reorder(final_result$pathway_name, 
                                                           final_result$p.adjust), y = "p.adjust")) + geom_bar(stat = "identity", 
                                                                                                               fill = bar_color) + geom_hline(yintercept = 1.3, colour = "black", 
@@ -356,9 +353,10 @@ genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, t
     scale_fill_manual(drop = FALSE) + ylab("-log10(p.adjust)") + 
     geom_text(aes_string(label = "pathway_name", y = 0), 
               size = 4, color = "black", position = position_dodge(1), 
-              hjust = 0) + theme(axis.title.y = element_blank(), 
-                                 axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
+              hjust = 0) + 
+    theme(axis.title.y = element_blank(),axis.text.y = element_blank(), axis.ticks.y = element_blank()) +  
     ggtitle(title)
+  
   if (silent == F) {
     print(p)
   }

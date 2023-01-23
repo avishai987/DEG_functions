@@ -16,29 +16,21 @@ de_split <- function(Differential_expression_genes) {
 }
 
 
-# enrichment analysis function. Argument: output from de_split, group name.
-enrichment_analysis <- function(Differential_expression_genes = NULL, all_regulated = NULL,
-                                group_name="",background, fdr_Cutoff = 0.01,ident1_name = "", 
-                                ident2_name = "",write_csv = F, ident_name = "", ident_num = 1,
-                                return_df = F, pval_cutoff = F, add_bg_to_db = F , db = NULL,
-                                add_msigdb_to_bg = F, convert_background = F) {
+# enrichment analysis function.
+enrichment_analysis <- function(Differential_expression_genes = NULL,
+                               background, fdr_Cutoff = 0.01,ident.1 = "", 
+                               ident.2 = "",show_by = 1, by_pval = F, db = NULL, convert_background = F) {
 library(msigdbr,quietly = T)
 library(fdrtool,quietly = T)
 library(enrichR,quietly = T)
 library(clusterProfiler,quietly = T)
 library(RCurl,quietly = T)
   
-  if ( is.null(all_regulated)){
-    if ( is.null(Differential_expression_genes)){
-      print("please provide Differential_expression_genes or all_regulated")
-      return (NULL)
-    }
-    all_regulated = de_split(Differential_expression_genes)
-  }
+  all_regulated = de_split(Differential_expression_genes)
   
   
-  i = 1; #for choosing the right the names
-  all_graphs <- list() #create list to save graphs
+  
+  i = 1; #iterator
   all_results = list()#create list to enrichment results
   titles = c("negative markers", "positive markers")
   colors = c("indianred2", "dodgerblue")
@@ -50,11 +42,11 @@ library(RCurl,quietly = T)
     #calculate fdr
     regulated$fdr<-p.adjust(p = as.vector(regulated$p_val) ,method = "fdr" )
     
-    if (pval_cutoff == T){
+    if (by_pval == T){
       genes_to_test = regulated$genes[regulated$p_val<0.05] #take genes less than the cutoff 
       
     }
-    if (pval_cutoff == F){
+    if (by_pval == F){
       genes_to_test = regulated$genes[regulated$fdr<fdr_Cutoff] #take genes less than the cutoff 
     }
     

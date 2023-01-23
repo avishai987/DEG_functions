@@ -32,8 +32,20 @@ library(RCurl,quietly = T)
   
   i = 1; #iterator
   all_results = list()#create list to enrichment results
-  titles = c("negative markers", "positive markers")
-  colors = c("indianred2", "dodgerblue")
+  
+  idents = c(ident.1,ident.2)
+  
+  title_1 = paste("Upregulated in",idents[show_by])
+  title_2 = paste("Downregulated in",idents[show_by])
+  titles = c(title_1, title_2)
+  colors = c("dodgerblue", "indianred2")
+  
+  if(show_by == 2){
+    titles %>% rev()
+    colors %>% rev()
+  }
+  
+  
   for (regulated in all_regulated) { #do twice for downregulated and up
 
     #take genes from differential expression

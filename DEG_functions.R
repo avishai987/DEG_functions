@@ -18,7 +18,7 @@ de_split <- function(Differential_expression_genes) {
 
 # enrichment analysis function.
 enrichment_analysis <- function(Differential_expression_genes = NULL,
-                               background, fdr_Cutoff = 0.01,ident.1 = "", 
+                               background, fdr_Cutoff = 0.01,ident.1 = , 
                                ident.2 = "",show_by = 1, by_pval = F, db = NULL, convert_background = F) {
 library(msigdbr,quietly = T)
 library(fdrtool,quietly = T)
@@ -41,8 +41,8 @@ library(RCurl,quietly = T)
   colors = c("dodgerblue", "indianred2")
   
   if(show_by == 2){
-    titles %>% rev()
-    colors %>% rev()
+    titles = titles %>% rev()
+    colors = colors %>% rev()
   }
   
   

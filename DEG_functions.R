@@ -156,6 +156,7 @@ library(RCurl,quietly = T)
   
   }
   
+  #perform enrichment analysis of vector of genes
 genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, title, silent = F, 
                                 custom_pathways = NULL, return_all = F,bar_color = "dodgerblue" ) {
   library(clusterProfiler,quietly = T)
@@ -230,7 +231,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, t
   return(enrichment_result)
 }
   
-
+# make a heatmap from patients X pathways pvalues dataframe
 sig_heatmap <- function(all_patients_result, title,clustering_distance =  "euclidean", annotation = NULL, silent = F) {
   my_fun <- function(p) {                     
     asterisks_vec = p

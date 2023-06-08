@@ -17,9 +17,9 @@ de_split <- function(Differential_expression_genes) {
 
 
 # enrichment analysis function.
-enrichment_analysis <- function(Differential_expression_genes = NULL,
+enrichment_analysis <- function(markers,
                                background, fdr_Cutoff = 0.01,ident.1, 
-                               ident.2 = "",show_by = 1, by_pval = F, db = NULL, convert_background = F) {
+                               ident.2 = "",show_by_ident = 1, by_pval = F) {
 library(msigdbr,quietly = T)
 library(fdrtool,quietly = T)
 library(enrichR,quietly = T)
@@ -55,12 +55,14 @@ library(RCurl,quietly = T)
     regulated$fdr<-p.adjust(p = as.vector(regulated$p_val) ,method = "fdr" )
     
     if (by_pval == T){
-      genes_to_test = regulated$genes[regulated$p_val<0.05] #take genes less than the cutoff 
+      genes_to_test = regulated$genes[regulated$p_val<0.05] #take genes less than the pval cutoff 
       
     }
     if (by_pval == F){
-      genes_to_test = regulated$genes[regulated$fdr<fdr_Cutoff] #take genes less than the cutoff 
+      genes_to_test = regulated$genes[regulated$fdr<fdr_Cutoff] #take genes less than the fdr cutoff 
     }
+    
+
     
     enrich_res = genes_vec_enrichment(genes = genes_to_test,background = background,homer = T,title = titles[i],bar_color = colors[i],silent = T
                          ,return_all = T)

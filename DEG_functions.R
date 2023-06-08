@@ -71,7 +71,7 @@ library(RCurl,quietly = T)
   }
   
   p<-all_results[[1]]$plt+all_results[[2]]$plt
-  print(p)
+  return(p)
 }
 
 

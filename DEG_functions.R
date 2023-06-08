@@ -19,7 +19,7 @@ de_split <- function(Differential_expression_genes) {
 # enrichment analysis function.
 enrichment_analysis <- function(markers,
                                background, fdr_Cutoff = 0.01,ident.1, 
-                               ident.2 = "",show_by_ident = 1, by_pval = F) {
+                               ident.2 = "",show_by_ident = 1, by_pval = F,custom_pathways = NULL) {
 library(msigdbr,quietly = T)
 library(fdrtool,quietly = T)
 library(enrichR,quietly = T)
@@ -65,7 +65,7 @@ library(RCurl,quietly = T)
 
     
     enrich_res = genes_vec_enrichment(genes = genes_to_test,background = background,homer = T,title = titles[i],bar_color = colors[i],silent = T
-                         ,return_all = T)
+                         ,return_all = T,custom_pathways = custom_pathways)
     all_results[[i]] = enrich_res
     i = i+1
   }

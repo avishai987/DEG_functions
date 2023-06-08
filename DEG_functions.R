@@ -26,7 +26,7 @@ library(enrichR,quietly = T)
 library(clusterProfiler,quietly = T)
 library(RCurl,quietly = T)
   
-  all_regulated = de_split(Differential_expression_genes)
+  all_regulated = de_split(markers)
   
   
   
@@ -35,12 +35,12 @@ library(RCurl,quietly = T)
   
   idents = c(ident.1,ident.2)
   
-  title_1 = paste("Upregulated in",idents[show_by])
-  title_2 = paste("Downregulated in",idents[show_by])
+  title_1 = paste("Upregulated in",idents[show_by_ident])
+  title_2 = paste("Downregulated in",idents[show_by_ident])
   titles = c(title_1, title_2)
   colors = c("dodgerblue", "indianred2")
   
-  if(show_by == 2){
+  if(show_by_ident == 2){
     titles = titles %>% rev()
     colors = colors %>% rev()
   }

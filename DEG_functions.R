@@ -233,55 +233,7 @@ genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, t
   return(enrichment_result)
 }
   
-# make a heatmap from patients X pathways pvalues dataframe
-sig_heatmap <- function(all_patients_result, title,clustering_distance =  "euclidean", annotation = NULL, silent = F) {
-  my_fun <- function(p) {                     
-    asterisks_vec = p
-    # p = c(0.001, 0.01, 0.05,3.314507e-15)
-    asterisks_vec[p<=0.05 & p>0.01] = "*"
-    asterisks_vec[p<=0.01 & p > 0.001] = "**"
-    asterisks_vec[p<=0.001 & p >= 0] = "***"
-    asterisks_vec[p>0.05] = ""
-    paste(asterisks_vec)
-  }
-  asterisks = all_patients_result
-  asterisks[] <- lapply(all_patients_result, my_fun)
-  
-  
-  
-  all_patients_result = -log(all_patients_result)
-  all_patients_result[all_patients_result>35] = 35
-  paletteFunc <- colorRampPalette(c("white","navy"));
-  
-  palette <- paletteFunc(100)
-  # breaks = seq(0,max(all_patients_result), length.out =6)
-  # breaks = round(breaks, digits = 0)
-  # breaks_labels = as.character(breaks)
-  # breaks_labels[length(breaks_labels)] = "FDR"
-  
-  
-  p<- pheatmap(all_patients_result,
-               cluster_rows = T,
-               cluster_cols = T,
-               show_rownames = TRUE, 
-               color = palette,
-               # breaks = seq(0,20,0.2), 
-               number_color = "grey30",
-               main = title,
-               display_numbers = asterisks,
-               fontsize_row = 8,
-               clustering_distance_rows = clustering_distance,
-               clustering_distance_cols = clustering_distance,
-               annotation_col = annotation[["myannotation"]],
-               annotation_colors = annotation[["ann_colors"]],
-               border_color = "black",silent = silent
-               # legend_breaks =breaks,
-               # legend_labels = breaks_labels
-  )
-  if(silent == F){
-    print(p) }
-  return (p)
-}
+
 
 
 

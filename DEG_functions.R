@@ -262,3 +262,69 @@ filter_features <- function(object,ident.1,ident.2,min.pct = 0.1, var_genes_only
 
   return (features)
 }
+
+
+
+.handle.genesets <- function(genesets) {
+  if (is(genesets, "list")) {
+    gsets.obj <- gsets$new(genesets, quiet=TRUE)
+  }
+  else if (is(genesets, "gsets") | is(genesets, "rgsets")) {
+    gsets.obj <- genesets
+  } 
+  else {
+    stop("Genesets must be gsets/rgsets object or named list of genesets")
+  }
+  return(gsets.obj)
+}
+
+#from: https://montilab.github.io/hypeR-docs/articles/docs/fgsea.html
+hypeR_fgsea <- function(signature, genesets, sample.size=101, min.size=1, max.size=Inf, up_only = T,...) {
+  # Save original arguments
+  args <- as.list(environment())
+  
+  # Save gsets object
+  gsets.obj <- .handle.genesets(genesets)
+  args$genesets <- gsets.obj
+  
+  # Run fgsea
+  results <- fgsea::fgseaMultilevel(stats=signature, 
+                                    pathways=gsets.obj$genesets, 
+                                    sampleSize=sample.size, 
+                                    minSize=min.size, 
+                                    maxSize=max.size,
+                                    ...)
+  
+  data <- results %>%
+    data.frame() %>%
+    plyr::rename(c("pathway"="label", "padj"="fdr", "log2err"="lte", "size"="overlap", "leadingEdge"="le")) %>%
+    dplyr::rename_with(tolower) %>%
+    mutate(pval=signif(pval, 2)) %>%
+    mutate(fdr=signif(fdr, 2)) %>%
+    mutate(le=sapply(le, function(x) paste(x, collapse=','))) %>%
+    mutate(signature=length(signature)) %>%
+    mutate(geneset=sapply(label, function(x) length(gsets.obj$genesets[[x]]))) %>%
+    dplyr::select(c("label", "pval", "fdr", "lte", "es", "nes", "signature", "geneset", "overlap", "le"))
+  
+  data.up <- data %>%
+    dplyr::filter(es > 0) %>%
+    dplyr::arrange(pval, es)
+  
+  data.dn <- data %>%
+    dplyr::filter(es < 0) %>%
+    dplyr::arrange(pval, es)    
+  
+  # Reproducibility information
+  info <- list(fgsea=paste("v", packageVersion("fgsea"), sep=""),
+               signature=length(signature), 
+               genesets=args$genesets$info())
+  
+  info <- c(info, args[c("sample.size", "min.size", "max.size")])
+  info <- lapply(info, as.character)
+  
+  # Wrap dataframe in hyp object
+  hyp.up <- hyp$new(data=data.up, args=args, info=info)
+  hyp.dn <- hyp$new(data=data.dn, args=args, info=info)
+  mhyp <- multihyp$new(data=list("up"=hyp.up, "dn"=hyp.dn))
+  if(up_only){return(hyp.up)}else{return(mhyp)}
+}

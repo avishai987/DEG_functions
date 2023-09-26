@@ -140,7 +140,7 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   #colors for diff exp genes
   cols <- structure(c("green4", "red", "grey"), .Names = c(names_for_label[2],names_for_label[1], "Same"))
   
-  title = paste(title,"Volcano plot- ", ident1,"vs", ident2)
+  title = paste(title,"Volcano plot - ", ident1,"vs", ident2)
   p = ggplot(data=de_genes, aes(x=avg_log2FC, y=-log10(p_val), col=diffexpressed, label=delabel)) + 
     geom_point() + 
     theme_minimal() +
@@ -149,7 +149,7 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
     xlab(paste("avg_log2FC (Positive = up in", ident1,")"))+ 
     ylab("Significance")+ 
     scale_y_continuous(labels = function(x) {parse(text = paste0("10^-",x))})+
-    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,abs(log2fc) >", log2fc_cutoff,")")))+
+    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|log2fc| >", log2fc_cutoff,")")))+
     {if(show_legend == F) theme(legend.position="none")}+
     {if(show_legend) ggtitle(title) }+
     theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))

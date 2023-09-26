@@ -86,9 +86,9 @@ library(RCurl,quietly = T)
 #' @param clac_fdr_from_logfc - deprecated. calculate FDR from genes that has at list x logFC (0= all genes). FDR on less genes should raise number of significant genes.
 #' @importFrom stats p.adjust
 
-  volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
-                      ident2 = "" , fdr_cutoff = 0.05 , log2fc_cutoff = 0.6, max_names = 10,
-                      return_de_genes = F, show_graph = T, show_legend = T) {
+volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
+                        ident2 = "" , fdr_cutoff = 0.05 , log2fc_cutoff = 0.6, max_names = 10,
+                        return_de_genes = F, show_graph = T, show_legend = T) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
   names_for_label = c(paste(ident2,"down genes"),paste(ident2,"up genes"))
@@ -118,8 +118,11 @@ library(RCurl,quietly = T)
   down_genes = de_genes$diffexpressed == names_for_label[1]
   up_genes = de_genes$diffexpressed == names_for_label[2]
   
-  down_genes[max_names:length(down_genes)] = F
-  up_genes[max_names:length(up_genes)] = F
+  last_gene_to_show_down = which(de_genes$diffexpressed == names_for_label[1])[max_names]
+  last_gene_to_show_up = which(de_genes$diffexpressed == names_for_label[2])[max_names]
+  
+  down_genes[last_gene_to_show_down:length(down_genes)] = F
+  up_genes[last_gene_to_show_up:length(up_genes)] = F
   
   de_genes$delabel[up_genes] <- rownames(de_genes)[up_genes]
   de_genes$delabel[down_genes] <- rownames(de_genes)[down_genes]
@@ -129,7 +132,7 @@ library(RCurl,quietly = T)
   if (!is.null(show_gene_names)){
     de_genes_index = match(show_gene_names,rownames(de_genes)) #indexes of de_genes that in show_gene_names
     de_genes_index <- de_genes_index[!is.na(de_genes_index)] #remove NA
-  
+    
     show_gene_names_index = show_gene_names %in% rownames(de_genes) #indexes of show_gene_names that in de_genes
     de_genes$delabel[de_genes_index] = show_gene_names [show_gene_names_index]
   }
@@ -149,14 +152,14 @@ library(RCurl,quietly = T)
     guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,abs(log2fc) >", log2fc_cutoff,")")))+
     {if(show_legend == F) theme(legend.position="none")}+
     {if(show_legend) ggtitle(title) }+
-    theme(axis.text  = element_text( color="black", size=14),axis.title = element_text( color="black", size=17))
+    theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))
   
   if(show_graph == T){print(p)}
   
   if (return_de_genes == T){ return(de_genes)}
   else {return (p)}
   
-  }
+}
   
   #perform enrichment analysis of vector of genes
 genes_vec_enrichment<- function (genes, background, gene_sets = "", homer = F, title, silent = F, 

@@ -80,14 +80,14 @@ library(RCurl,quietly = T)
 #' @param top_genes_text - show names of top n genes  (0 = all significant genes)
 #' @param show_gene_names - show specific genes (list of genes)
 #' @param fdr_cutoff - consider significant from cutoff
-#' @param log2fc_cutoff - consider significant from cutoff
+#' @param fc_cutoff - consider significant from cutoff
 #' @param max_names - maximum names to show
 #' @param return_de_genes - return DEG df instead of ggplot
 #' @param clac_fdr_from_logfc - deprecated. calculate FDR from genes that has at list x logFC (0= all genes). FDR on less genes should raise number of significant genes.
 #' @importFrom stats p.adjust
 
 volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
-                        ident2 = "" , fdr_cutoff = 0.05 , log2fc_cutoff = 0.6, max_names = 10,
+                        ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3, max_names = 10,
                         return_de_genes = F, show_graph = T, show_legend = T) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
@@ -96,19 +96,12 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   de_genes$diffexpressed <- "Same" 
   de_genes$avg_log2FC[!is.finite(de_genes$avg_log2FC)] <- 1000 #remove infinite values
   
-  # #calculate fdr from genes that has logFC > clac_fdr_from_logfc (clac_fdr_from_logfc = 0 -> all genes)
-  # filtered_markers = filter(de_genes, abs(avg_log2FC) > clac_fdr_from_logfc) #take genes with logFC > clac_fdr_from_logfc
-  # filtered_markers$fdr <-p.adjust(p = filtered_markers$p_val ,method = "fdr") #calc fdr
-  # de_genes$fdr = 1 
-  # filtered_markers_indexes = which(rownames(de_genes) %in% rownames(filtered_markers))
-  # de_genes[filtered_markers_indexes, "fdr"] = filtered_markers$fdr 
-  
   de_genes$fdr = p.adjust(p = de_genes$p_val ,method = "fdr")
-  # if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP" 
-  de_genes$diffexpressed[de_genes$avg_log2FC > log2fc_cutoff & de_genes$fdr < fdr_cutoff] <- names_for_label[1]
+  # if log2Foldchange > fc_cutoff and pvalue < 0.05, set as "UP" 
+  de_genes$diffexpressed[de_genes$avg_log2FC > log2(fc_cutoff) & de_genes$fdr < fdr_cutoff] <- names_for_label[1]
   
   # if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
-  de_genes$diffexpressed[de_genes$avg_log2FC < -log2fc_cutoff & de_genes$fdr < fdr_cutoff] <- names_for_label[2]
+  de_genes$diffexpressed[de_genes$avg_log2FC < (-log2(fc_cutoff)) & de_genes$fdr < fdr_cutoff] <- names_for_label[2]
   
   #set name labels for highest genes
   de_genes$delabel <- NA
@@ -149,7 +142,7 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
     xlab(paste("avg_log2FC (Positive = up in", ident1,")"))+ 
     ylab("Significance")+ 
     scale_y_continuous(labels = function(x) {parse(text = paste0("10^-",x))})+
-    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|log2fc| >", log2fc_cutoff,")")))+
+    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|log2fc| >", fc_cutoff,")")))+
     {if(show_legend == F) theme(legend.position="none")}+
     {if(show_legend) ggtitle(title) }+
     theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))

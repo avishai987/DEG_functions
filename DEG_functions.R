@@ -138,7 +138,7 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   
   if(show_graph == T){print(p)}
   
-  if (return_de_genes == T){ return(de_genes)}
+  else if (return_de_genes == T){ return(de_genes)}
   else {return (p)}
   
 }

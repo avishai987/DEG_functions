@@ -128,10 +128,10 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
     theme_minimal() +
     scale_color_manual(values=cols) +
     geom_text_repel(na.rm = T,box.padding = 1,max.overlaps = Inf,color = "blue") +
-    xlab(paste("avg_log2FC (Positive = up in", ident1,")"))+ 
-    ylab("Significance")+ 
+    xlab(paste("log2(FC) (Positive = up in", ident1,")"))+ 
+    ylab("log10(p-value)")+ 
     scale_y_continuous(labels = function(x) {parse(text = paste0("10^-",x))})+
-    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|log2fc| >", fc_cutoff,")")))+
+    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|fc| >", fc_cutoff,")")))+
     {if(show_legend == F) theme(legend.position="none")}+
     {if(show_legend) ggtitle(title) }+
     theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))

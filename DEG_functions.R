@@ -87,7 +87,7 @@ library(RCurl,quietly = T)
 
 volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
                         ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3,
-                        return_de_genes = F, show_graph = T, show_legend = T) {
+                        return_de_genes = F, show_legend = T) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
   names_for_label = c(paste(ident2,"down genes"),paste(ident2,"up genes"))
@@ -136,9 +136,7 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
     {if(show_legend) ggtitle(title) }+
     theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))
   
-  if(show_graph == T){print(p)}
-  
-  else if (return_de_genes == T){ return(de_genes)}
+  if (return_de_genes == T){ return(de_genes)}
   else {return (p)}
   
 }

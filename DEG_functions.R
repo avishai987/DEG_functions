@@ -263,6 +263,7 @@ filter_features <- function(object,ident.1,ident.2,min.pct = 0.1, var_genes_only
 
 #from: https://montilab.github.io/hypeR-docs/articles/docs/fgsea.html
 hypeR_fgsea <- function(signature, genesets, sample.size=101, min.size=1, max.size=Inf, up_only = T,...) {
+  require(hypeR)
   # Save original arguments
   args <- as.list(environment())
   

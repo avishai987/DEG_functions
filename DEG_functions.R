@@ -85,12 +85,12 @@ library(RCurl,quietly = T)
 #' @param clac_fdr_from_logfc - deprecated. calculate FDR from genes that has at list x logFC (0= all genes). FDR on less genes should raise number of significant genes.
 #' @importFrom stats p.adjust
 
-volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
-                        ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3,
-                        return_de_genes = F, show_legend = T) {
+volcano_plot = function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
+                          ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3,
+                          return_de_genes = F, show_legend = T) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
-  names_for_label = c(paste(ident2,"down genes"),paste(ident2,"up genes"))
+  names_for_label = c(paste("Genes up in",ident1),paste("Genes up in",ident2))
   #color genes if there are over/under/same expressed
   de_genes$diffexpressed <- "Same" 
   de_genes$avg_log2FC[!is.finite(de_genes$avg_log2FC)] <- 1000 #remove infinite values
@@ -106,8 +106,8 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   down_genes = de_genes$diffexpressed == names_for_label[1]
   up_genes = de_genes$diffexpressed == names_for_label[2]
   
-  de_genes$delabel[up_genes][1:top_genes_text] <- rownames(de_genes)[up_genes][1:top_genes_text]
-  de_genes$delabel[down_genes][1:top_genes_text] <- rownames(de_genes)[down_genes][1:top_genes_text]
+  de_genes$delabel[up_genes][0:top_genes_text] <- rownames(de_genes)[up_genes][0:top_genes_text]
+  de_genes$delabel[down_genes][0:top_genes_text] <- rownames(de_genes)[down_genes][0:top_genes_text]
   
   
   #Show genes that specify in show_gene_names
@@ -122,16 +122,16 @@ volcano_plot<- function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   #colors for diff exp genes
   cols <- structure(c("green4", "red", "grey"), .Names = c(names_for_label[2],names_for_label[1], "Same"))
   
-  title = paste(title,"Volcano plot - ", ident1,"vs", ident2)
+  title = paste(title,"Differential gene expression in", ident1,"vs", ident2)
   p = ggplot(data=de_genes, aes(x=avg_log2FC, y=-log10(p_val), col=diffexpressed, label=delabel)) + 
     geom_point() + 
     theme_minimal() +
     scale_color_manual(values=cols) +
     geom_text_repel(na.rm = T,box.padding = 1,max.overlaps = Inf,color = "blue") +
-    xlab(paste("log2(FC) (Positive = up in", ident1,")"))+ 
-    ylab("log10(p-value)")+ 
+    xlab("Average log2 fold-change")+ 
+    ylab("p-value")+ 
     scale_y_continuous(labels = function(x) {parse(text = paste0("10^-",x))})+
-    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|fc| >", fc_cutoff,")")))+
+    guides(col=guide_legend(title=paste0("Significant DEG\n(FDR<",fdr_cutoff," ,|FC| >", fc_cutoff,")")))+
     {if(show_legend == F) theme(legend.position="none")}+
     {if(show_legend) ggtitle(title) }+
     theme(axis.text  = element_text( color="black", size=12),axis.title = element_text( color="black", size=12))

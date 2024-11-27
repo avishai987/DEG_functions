@@ -283,11 +283,11 @@ hypeR_fgsea <- function(signature, genesets, sample.size=101, min.size=1, max.si
     data.frame() %>%
     plyr::rename(c("pathway"="label", "padj"="fdr", "log2err"="lte", "size"="overlap", "leadingEdge"="le")) %>%
     dplyr::rename_with(tolower) %>%
-    mutate(pval=signif(pval, 2)) %>%
-    mutate(fdr=signif(fdr, 2)) %>%
-    mutate(le=sapply(le, function(x) paste(x, collapse=','))) %>%
-    mutate(signature=length(signature)) %>%
-    mutate(geneset=sapply(label, function(x) length(gsets.obj$genesets[[x]]))) %>%
+    dplyr::mutate(pval=signif(pval, 2)) %>%
+    dplyr::mutate(fdr=signif(fdr, 2)) %>%
+    dplyr::mutate(le=sapply(le, function(x) paste(x, collapse=','))) %>%
+    dplyr::mutate(signature=length(signature)) %>%
+    dplyr::mutate(geneset=sapply(label, function(x) length(gsets.obj$genesets[[x]]))) %>%
     dplyr::select(c("label", "pval", "fdr", "lte", "es", "nes", "signature", "geneset", "overlap", "le"))
   
   data.up <- data %>%

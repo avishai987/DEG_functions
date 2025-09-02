@@ -87,7 +87,7 @@ library(RCurl,quietly = T)
 
 volcano_plot = function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
                         ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3,
-                        return_de_genes = F, show_legend = T, padding = 1) {
+                        return_de_genes = F, show_legend = T, padding = 1, ...) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
   names_for_label = c(paste("Genes up in",ident1),paste("Genes up in",ident2))
@@ -127,7 +127,7 @@ volcano_plot = function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
     geom_point() + 
     theme_minimal() +
     scale_color_manual(values=cols) +
-    geom_text_repel(na.rm = T,box.padding = padding,max.overlaps = Inf,color = "blue") +
+    geom_text_repel(na.rm = T,box.padding = padding,max.overlaps = Inf,color = "blue", ...) +
     xlab("Average log2 fold-change")+ 
     ylab("p-value")+ 
     scale_y_continuous(labels = function(x) {parse(text = paste0("10^-",x))})+

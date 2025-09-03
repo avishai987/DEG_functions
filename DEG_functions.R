@@ -83,11 +83,12 @@ library(RCurl,quietly = T)
 #' @param fc_cutoff - consider significant from cutoff
 #' @param return_de_genes - return DEG df instead of ggplot
 #' @param clac_fdr_from_logfc - deprecated. calculate FDR from genes that has at list x logFC (0= all genes). FDR on less genes should raise number of significant genes.
+#' @param colors_order - order of the colors, c(1,2) is green red. c(2,1) is red green.
 #' @importFrom stats p.adjust
 
 volcano_plot = function(de_genes, top_genes_text=0, title = "" ,show_gene_names = NULL, ident1 = "",
                         ident2 = "" , fdr_cutoff = 0.05 , fc_cutoff = 1.3,
-                        return_de_genes = F, show_legend = T, padding = 1, ...) {
+                        return_de_genes = F, show_legend = T, padding = 1,colors_order = c(1,2), ...) {
   library(ggrepel,quietly = T)
   library(dplyr,quietly = T)
   names_for_label = c(paste("Genes up in",ident1),paste("Genes up in",ident2))
@@ -120,7 +121,8 @@ volcano_plot = function(de_genes, top_genes_text=0, title = "" ,show_gene_names 
   }
   
   #colors for diff exp genes
-  cols <- structure(c("green4", "red", "grey"), .Names = c(names_for_label[1],names_for_label[2], "Same"))
+  cols <- structure(c("green4", "red", "grey"),.Names = c(names_for_label[colors_order], 
+        "Same"))
   
   title = paste(title,"Differential gene expression in", ident1,"vs", ident2)
   p = ggplot(data=de_genes, aes(x=avg_log2FC, y=-log10(p_val), col=diffexpressed, label=delabel)) + 
